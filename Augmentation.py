@@ -6,7 +6,7 @@
 #   By: iberegsz <iberegsz@student.42vienna.com>   +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #   Created: 2025/03/31 12:36:41 by iberegsz          #+#    #+#              #
-#   Updated: 2025/04/02 21:09:50 by iberegsz         ###   ########.fr        #
+#   Updated: 2025/04/02 23:28:17 by iberegsz         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -116,7 +116,17 @@ def rotate_image(image):
 
 
 def skew_image(image):
-    """Apply a random perspective skew."""
+    """Apply a random perspective skew.
+    
+    Args:
+        image (np.ndarray): The image to skew.
+
+    Raises:
+        Exception: If there is an error during skewing.
+
+    Returns:
+        np.ndarray: The skewed image.
+    """
     try:
         h, w = image.shape[:2]
         src_pts = np.float32([[0, 0], [w, 0], [0, h], [w, h]])
@@ -136,7 +146,16 @@ def skew_image(image):
 
 
 def shear_image(image):
-    """Apply a shear transformation."""
+    """Apply a shear transformation.
+    
+    Args:
+        image (np.ndarray): The image to shear.
+        
+    Raises:
+        Exception: If there is an error during shearing.
+        
+    Returns:
+        np.ndarray: The sheared image."""
     try:
         h, w = image.shape[:2]
         shear_factor = random.uniform(-0.3, 0.3)
@@ -148,7 +167,17 @@ def shear_image(image):
 
 
 def crop_image(image):
-    """Randomly crop a part of the image."""
+    """Randomly crop a part of the image.
+    
+    Args:
+        image (np.ndarray): The image to crop.
+        
+    Raises:
+        Exception: If there is an error during cropping.
+
+    Returns:
+        np.ndarray: The cropped image.
+    """
     try:
         h, w = image.shape[:2]
         crop_x = int(w * 0.8)
@@ -162,7 +191,19 @@ def crop_image(image):
 
 
 def elastic_distortion(image, alpha=40, sigma=6):
-    """Apply elastic transformation (distortion)."""
+    """Apply elastic transformation (distortion).
+    
+    Args:
+        image (np.ndarray): The image to distort.
+        alpha (float): Scaling factor for the distortion.
+        sigma (float): Standard deviation for the Gaussian filter.
+        
+    Raises:
+        Exception: If there is an error during distortion.
+            
+    Returns:
+        np.ndarray: The distorted image.
+    """
     try:
         h, w = image.shape[:2]
         dx = gaussian_filter((np.random.rand(h, w) * 2 - 1), sigma) * alpha
@@ -189,7 +230,17 @@ def elastic_distortion(image, alpha=40, sigma=6):
 
 
 def augment_image(image_path):
-    """Apply all augmentations and save images."""
+    """Apply all augmentations and save images.
+    
+    Args:
+        image_path (str): Path to the image file.
+        
+    Raises:
+        Exception: If there is an error during augmentation.
+        
+    Returns:
+        None
+    """
     try:
         image = load_image(image_path)
 
@@ -214,6 +265,19 @@ def augment_image(image_path):
 
 
 def main():
+    """Main function to apply augmentations to an image."
+
+    Args:
+        None
+
+    Raises:
+        SystemExit: If the script is not run with the correct arguments.
+        FileNotFoundError: If the image file cannot be found or read.
+        ImportError: If OpenCV is not installed correctly.
+
+    Returns:
+        None
+    """
     try:
         if len(sys.argv) < 2:
             print(f"Usage: {sys.argv[0]} <path_to_image>")
