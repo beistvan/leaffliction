@@ -117,7 +117,7 @@ def rotate_image(image):
 
 def skew_image(image):
     """Apply a random perspective skew.
-    
+
     Args:
         image (np.ndarray): The image to skew.
 
@@ -147,13 +147,13 @@ def skew_image(image):
 
 def shear_image(image):
     """Apply a shear transformation.
-    
+
     Args:
         image (np.ndarray): The image to shear.
-        
+
     Raises:
         Exception: If there is an error during shearing.
-        
+
     Returns:
         np.ndarray: The sheared image."""
     try:
@@ -168,10 +168,10 @@ def shear_image(image):
 
 def crop_image(image):
     """Randomly crop a part of the image.
-    
+
     Args:
         image (np.ndarray): The image to crop.
-        
+
     Raises:
         Exception: If there is an error during cropping.
 
@@ -192,15 +192,15 @@ def crop_image(image):
 
 def elastic_distortion(image, alpha=40, sigma=6):
     """Apply elastic transformation (distortion).
-    
+
     Args:
         image (np.ndarray): The image to distort.
         alpha (float): Scaling factor for the distortion.
         sigma (float): Standard deviation for the Gaussian filter.
-        
+
     Raises:
         Exception: If there is an error during distortion.
-            
+
     Returns:
         np.ndarray: The distorted image.
     """
@@ -231,13 +231,13 @@ def elastic_distortion(image, alpha=40, sigma=6):
 
 def augment_image(image_path):
     """Apply all augmentations and save images.
-    
+
     Args:
         image_path (str): Path to the image file.
-        
+
     Raises:
         Exception: If there is an error during augmentation.
-        
+
     Returns:
         None
     """
