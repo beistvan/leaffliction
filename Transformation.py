@@ -89,7 +89,7 @@ def transformation_pseudolandmarks(image):
         gray, maxCorners=50, qualityLevel=0.01, minDistance=10)
     image_landmarks = image.copy()
     if corners is not None:
-        corners = np.int0(corners)
+        corners = np.intp(corners)
         for i in corners:
             x, y = i.ravel()
             cv2.circle(image_landmarks, (x, y), 3,
