@@ -6,9 +6,6 @@ for each subdirectory.
 Usage:
 - Provide path to the top-level directory containing subdirectories with images
 - Use the `--save` to save the plots instead of displaying them interactively
-
-Example:
-    python Distribution.py -data /path/to/dataset --save
 """
 import argparse
 import os
