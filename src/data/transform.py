@@ -123,13 +123,63 @@ def transformation_pseudolandmarks(image: np.ndarray) -> np.ndarray:
 
 
 def plot_color_histogram(image: np.ndarray, ax) -> None:
-    """ Plot the RGB color histogram of the image """
-    colors = ('r', 'g', 'b')
-    for i, col in enumerate(colors):
-        hist = cv2.calcHist([image], [i], None, [256], [0, 256])
-        ax.plot(hist, color=col)
-        ax.set_xlim([0, 256])
+    """Plot the color histogram for various channels on the provided axis."""
+
+    channels = [
+        (image[:, :, 0], 'r', 'Red'),
+        (image[:, :, 1], 'g', 'Green'),
+        (image[:, :, 2], 'b', 'Blue'),
+    ]
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    channels += [
+        (hsv[:, :, 0], 'orange', 'Hue'),
+        (hsv[:, :, 1], 'purple', 'Saturation'),
+        (hsv[:, :, 2], 'black', 'Value'),
+    ]
+
+    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    channels.append((hls[:, :, 1], 'gray', 'Lightness'))
+
+    by_vals = (
+        image[:, :, 2].astype('float32')
+        - (image[:, :, 0].astype('float32') + image[:, :, 1].astype('float32')) / 2
+    )
+    by = np.clip(by_vals, 0, 255).astype('uint8')
+    channels.append((by, 'y', 'Blue-Yellow'))
+
+    gm_vals = (
+        image[:, :, 1].astype('float32')
+        - (image[:, :, 0].astype('float32') + image[:, :, 2].astype('float32')) / 2
+    )
+    gm = np.clip(gm_vals, 0, 255).astype('uint8')
+    channels.append((gm, 'm', 'Green-Magenta'))
+
+    max_val = 0
+    for data, color, label in channels:
+        hist = cv2.calcHist([data], [0], None, [256], [0, 256]).flatten()
+        hist = hist / hist.sum() * 100
+        max_val = max(max_val, hist.max())
+        ax.plot(hist, color=color, label=label)
+
+    ax.set_xlim([0, 256])
+    ax.set_ylim([0, max_val * 1.05])
+    ax.set_facecolor('whitesmoke')
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.grid(which='both', color='white', linestyle='-', linewidth=0.5)
+    ax.set_xlabel("Pixel intensity")
+    ax.set_ylabel("Proportion of pixels (%)")
     ax.set_title("Color Histogram")
+    ax.legend(
+        title="Color Channel",
+        title_fontsize="small",
+        fontsize="small",
+        bbox_to_anchor=(1.05, 1),
+        loc='upper left',
+        borderaxespad=0.,
+        frameon=False
+    )
 
 
 def get_transformations(image: np.ndarray) -> Dict[str, np.ndarray]:
