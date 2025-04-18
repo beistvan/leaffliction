@@ -218,7 +218,7 @@ def get_transformations(image: np.ndarray) -> Dict[str, np.ndarray]:
         "Gaussian_blur": transformation_gaussian(image),
         "Contrast_adjusted": transformation_contrast(image),
         "Mask": transformation_mask(image),
-        "ROI_objects": transformation_roi(image),
+        "Roi_objects": transformation_roi(image),
         "Analyze_object": transformation_analyze(image),
         "Pseudolandmarks": transformation_pseudolandmarks(image)
     }
