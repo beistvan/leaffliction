@@ -1,39 +1,25 @@
-# *************************************************************************** #
-#                                                                             #
-#                                                        :::      ::::::::    #
-#   train.py                                           :+:      :+:    :+:    #
-#                                                    +:+ +:+         +:+      #
-#   By: iberegsz <iberegsz@student.42vienna.com>   +#+  +:+       +#+         #
-#                                                +#+#+#+#+#+   +#+            #
-#   Created: 2025/04/01 11:29:02 by iberegsz          #+#    #+#              #
-#   Updated: 2025/04/07 18:21:36 by iberegsz         ###   ########.fr        #
-#                                                                             #
-# *************************************************************************** #
-
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras import layers, models
+"""
+Train a leaf disease classification model using TensorFlow and Keras.
+This script includes data augmentation and saves the trained model
+and augmented images in a zip file.
+"""
 import argparse
 import zipfile
 import shutil
 import os
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers, models
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Train a leaf disease classification model."
     )
-    parser.add_argument("data_dir", help="Path to the dataset root directory.")
-    parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=32,
-        help="Batch size.")
-    parser.add_argument("--epochs", type=int, default=10,
-                        help="Number of training epochs.")
-    parser.add_argument(
-        "--output_zip",
-        default="trained_model_and_augmented.zip",
-        help="""Name of the output zip file containing the model
+
+    parser.add_argument("--data", help="Path to the dataset root directory")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
+    parser.add_argument("--epochs", type=int, default=10, help="Epochs.")
+    parser.add_argument("--output", default="trained_model_and_augmented.zip", help="""Name of the output zip file containing the model
 and augmented images.""")
     return parser.parse_args()
 
