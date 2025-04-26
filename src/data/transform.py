@@ -95,6 +95,20 @@ def process_directory(src_dir: str, dst_dir: str) -> None:
             save_transformations(entry.path, dst_dir, False)
 
 
+def run_single_image(path: str, headless: bool) -> None:
+    """ Process a single image in headless or GUI mode """
+    if not os.path.isfile(path):
+        sys.exit(f"Error: {path} is not a valid file.")
+
+    image = load_image(path)
+
+    if headless:
+        os.makedirs("output", exist_ok=True)
+        save_transformations(path, "output", True)
+
+    display_transformations(image)
+
+
 def parse_args() -> argparse.Namespace:
     """ Parse and validate command-line arguments """
     parser = argparse.ArgumentParser(description="Image transformation tool")
@@ -116,20 +130,6 @@ def parse_args() -> argparse.Namespace:
         parser.error("-dst is required when using -src")
 
     return args
-
-
-def run_single_image(path: str, headless: bool) -> None:
-    """ Process a single image in headless or GUI mode """
-    if not os.path.isfile(path):
-        sys.exit(f"Error: {path} is not a valid file.")
-
-    image = load_image(path)
-
-    if headless:
-        os.makedirs("output", exist_ok=True)
-        save_transformations(path, "output", True)
-
-    display_transformations(image)
 
 
 def main() -> None:
