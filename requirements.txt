@@ -5,3 +5,4 @@ opencv-python==4.11.0.86
 argparse==1.4.0
 tensorflow==2.19.0
 flake8==7.2.0
+plantcv==4.7

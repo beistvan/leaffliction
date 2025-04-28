@@ -14,11 +14,11 @@ import argparse
 import logging
 import sys
 import os
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from transformations import get_transformations
 from intensity import plot_color_histogram
+from plantcv import plantcv as pcv
 
 
 logger = logging.getLogger(__name__)
@@ -30,26 +30,24 @@ logging.basicConfig(
 
 def load_image(image_path: str) -> np.ndarray:
     """ Load an image in RGB format from a given file path """
-    img_bgr = cv2.imread(image_path)
-    if img_bgr is None:
-        sys.exit(f"Error: Could not read image {image_path}")
-    return cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    image, _, _ = pcv.readimage(image_path, mode='RGB')
+    return image
 
 
 def save_image(image: np.ndarray, save_path: str) -> None:
     """ Save an RGB image to disk in BGR format (OpenCV default)"""
-    img_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    cv2.imwrite(save_path, img_bgr)
+    # cv2.imwrite(save_path, image
+    pcv.print_image(image, save_path)
+    logger.info("Saved: %s", save_path)
 
 
 def display_transformations(image: np.ndarray) -> None:
     """ Display all transformed images and color histogram in a grid """
-    transformations = get_transformations()
-
     fig = plt.figure(figsize=(12, 12))
-    for i, (name, function) in enumerate(transformations.items()):
+
+    for i, (name, function) in enumerate(get_transformations().items()):
         ax = fig.add_subplot(3, 3, i + 1)
-        ax.imshow(function(image))
+        ax.imshow(function(image.copy()), cmap='gray')
         ax.set_title(f"Figure {i+1}: {name.replace('_', ' ')}")
         ax.axis('off')
 
@@ -67,9 +65,7 @@ def save_transformations(image_path: str, dst_dir: str, hist: bool) -> None:
     base_name = os.path.splitext(os.path.basename(image_path))[0]
     os.makedirs(dst_dir, exist_ok=True)
 
-    transformations = get_transformations()
-
-    for name, function in transformations.items():
+    for name, function in get_transformations().items():
         save_path = os.path.join(dst_dir, f"{base_name}_{name}.jpg")
         save_image(function(image), save_path)
         logger.info("Saved: %s", save_path)
