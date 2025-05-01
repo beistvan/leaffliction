@@ -30,7 +30,7 @@ class Parameters:
         os.makedirs(self.outdir, exist_ok=True)
 
 
-def transform_image(params: Parameters, hist: bool, display = False) -> NoReturn:
+def transform_image(params: Parameters, display=False) -> NoReturn:
     """ Generate image transformations for a single image """
     transformer = ImageTransformer(
         params.image,
@@ -44,8 +44,6 @@ def transform_image(params: Parameters, hist: bool, display = False) -> NoReturn
     transformer.compute_roi()
     transformer.analyze_objects()
     transformer.generate_pseudolandmarks()
-    if hist:
-        transformer.generate_color_histogram()
     if display:
         transformer.display_results()
 
@@ -132,7 +130,7 @@ def main() -> NoReturn:
 
     if args.img:
         params = Parameters(args.img, outdir="./images", display=True)
-        transform_image(params, True, True)
+        transform_image(params, True)
         logger.info('Image transformation completed.')
         logger.info(f'Results saved in {params.outdir}')
     else:

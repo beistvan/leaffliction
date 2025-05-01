@@ -20,7 +20,7 @@ LABELED_COLORS = {
     "Saturation": (75, 0, 130),
     "Value": (255, 165, 0),
     "Green-Magenta": (255, 105, 180),
-    "Blue-Yellow" : (0, 255, 255),
+    "Blue-Yellow": (0, 255, 255),
 }
 
 
@@ -107,16 +107,12 @@ class ImageTransformer:
         ab1 = pcv.logical_or(maskeda_thresh, maskedb_thresh)
         ab = pcv.logical_or(maskeda_thresh1, ab1)
 
-        xor_img = pcv.logical_xor(maskeda_thresh, maskedb_thresh)
-        xor_img_color = pcv.apply_mask(self.original_img, xor_img, "white")
-
         ab_fill = pcv.fill(ab, 200)
 
         final_masked_image = pcv.apply_mask(masked, ab_fill, "white")
 
         if self.debug == "print":
             pcv.print_image(final_masked_image, f'{self.name}_masked.JPG')
-            pcv.print_image(xor_img_color, f'{self.name}_xor.JPG')
 
         self.final_mask = final_masked_image
         self.ab_mask = ab_fill
@@ -137,7 +133,6 @@ class ImageTransformer:
             cv2.CHAIN_APPROX_SIMPLE,
         )
         self.roi_objs = []
-        pcv.params.debug = self.debug
 
         for cnt in contours:
             for point in cnt:
@@ -162,8 +157,6 @@ class ImageTransformer:
 
         self.roi_masked = roi_masked
 
-        pcv.params.debug = None
-
     def analyze_objects(self) -> NoReturn:
         """ Analyze the objects in the image """
         if self.roi_objs is None:
@@ -176,7 +169,6 @@ class ImageTransformer:
             obj = None
         self.mask_img = self.ab_mask
 
-        pcv.params.debug = self.debug
         analysis_image = pcv.analyze.size(self.original_img, self.ab_mask)
 
         if self.debug == "print":
@@ -199,18 +191,9 @@ class ImageTransformer:
                 2
             )
 
-            if self.debug == "print":
-                pcv.print_image(analysis_image, f'{self.name}_shape_analysis.JPG')
-
             boundary_img1 = self.original_img.copy()
             cv2.line(boundary_img1, (0, 1680),
                      (self.original_img.shape[1], 1680), (0, 0, 255), 2)
-
-            if self.debug == "print":
-                pcv.print_image(
-                    boundary_img1,
-                    f'{self.name}_boundary_analysis.JPG'
-                )
 
             chans = cv2.split(self.original_img)
             hist_canvas = np.zeros((300, 256, 3), dtype="uint8")
@@ -232,8 +215,6 @@ class ImageTransformer:
                         RBG_CHANNELS[color],
                         1,
                     )
-            if self.debug == "print":
-                pcv.print_image(hist_canvas, f'{self.name}_color_analysis.JPG')
         self.detected_obj = obj
 
     def generate_pseudolandmarks(self) -> NoReturn:
@@ -285,16 +266,11 @@ class ImageTransformer:
         if self.mask_img is None:
             self.analyze_objects()
 
-        canvas_width = 256
-        canvas_height = 300
-        canvas = np.ones((canvas_height, canvas_width, 3), dtype="uint8") * 255
-
         b, g, r = cv2.split(self.original_img)
-
         lab = cv2.cvtColor(self.original_img, cv2.COLOR_BGR2LAB)
-        lab_L, lab_a, lab_b = cv2.split(lab)
-
         hsv = cv2.cvtColor(self.original_img, cv2.COLOR_BGR2HSV)
+
+        lab_L, lab_a, lab_b = cv2.split(lab)
         hsv_h, hsv_s, hsv_v = cv2.split(hsv)
 
         channel_list = [
@@ -309,29 +285,28 @@ class ImageTransformer:
             ("Blue-Yellow", lab_b, 256),
         ]
 
+        plt.figure(figsize=(10, 6))
         for label, img, bins in channel_list:
             hist = cv2.calcHist([img], [0], None, [bins], [0, bins])
-            cv2.normalize(
+            hist = cv2.normalize(
                 hist,
                 hist,
                 alpha=0,
-                beta=canvas_height,
+                beta=1,
                 norm_type=cv2.NORM_MINMAX
+            ).flatten()
+            plt.plot(
+                hist,
+                label=label,
+                color=np.array(LABELED_COLORS[label]) / 255
             )
-            hist = hist.flatten()
-            scale = canvas_width / bins
 
-            for i in range(1, bins):
-                x1 = int((i - 1) * scale)
-                x2 = int(i * scale)
-                y1 = canvas_height - int(hist[i - 1])
-                y2 = canvas_height - int(hist[i])
-                cv2.line(canvas, (x1, y1), (x2, y2), LABELED_COLORS[label], 1)
-
-        if self.debug == "print":
-            pcv.print_image(canvas, f'{self.name}_color_histogram.JPG')
-
-        self.histogram = canvas
+        plt.title("Color Histogram")
+        plt.xlabel("Pixel Intensity")
+        plt.ylabel("Normalized Frequency")
+        plt.legend(loc="upper right")
+        plt.grid(True)
+        plt.show()
 
     def display_results(self) -> NoReturn:
         """ Display the results of the transformations """
@@ -348,12 +323,6 @@ class ImageTransformer:
         axis[1, 1].set_title("Color Analysis")
         axis[1, 2].imshow(self.pseudolandmarks)
         axis[1, 2].set_title("Pseudolandmarks")
-
         plt.tight_layout()
-        plt.figure(figsize=(6, 6))
-        plt.imshow(self.histogram)
-        plt.title("Color Histogram")
-        plt.xlabel("Pixel Intensity")
-        plt.ylabel("Frequency")
 
-        plt.show()
+        self.generate_color_histogram()
