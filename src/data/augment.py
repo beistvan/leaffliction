@@ -136,12 +136,19 @@ def parse_args() -> argparse.Namespace:
         type=str,
         help="Path to the input image file."
     )
+    parser.add_argument(
+        "--silent",
+        action="store_true",
+        help="Suppress all logging output."
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     """ Main function to execute the script """
     args = parse_args()
+    if args.silent:
+        logging.getLogger().setLevel(logging.CRITICAL)
 
     if not os.path.isfile(args.image_path):
         logger.error("File not found: %s", args.image_path)
