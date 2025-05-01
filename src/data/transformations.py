@@ -3,12 +3,24 @@ from plantcv import plantcv as pcv
 import numpy as np
 import cv2
 from typing import NoReturn
+import matplotlib.pyplot as plt
 
 
 RBG_CHANNELS = {
     "b": (255, 0, 0),
     "g": (0, 255, 0),
     "r": (0, 0, 255)
+}
+LABELED_COLORS = {
+    "Blue": (255, 0, 0),
+    "Green": (0, 255, 0),
+    "Red": (0, 0, 255),
+    "Lightness": (128, 128, 128),
+    "Hue": (0, 165, 255),
+    "Saturation": (75, 0, 130),
+    "Value": (255, 165, 0),
+    "Green-Magenta": (255, 105, 180),
+    "Blue-Yellow" : (0, 255, 255),
 }
 
 
@@ -47,8 +59,6 @@ class ImageTransformer:
         self.ab_mask = None
 
         self.roi_objs = None
-        self.hierarchy_data = None
-        self.kept_mask_data = None
 
         self.mask_img = None
         self.detected_obj = None
@@ -126,14 +136,14 @@ class ImageTransformer:
             cv2.RETR_TREE,
             cv2.CHAIN_APPROX_SIMPLE,
         )
-        roi_objects = []
+        self.roi_objs = []
         pcv.params.debug = self.debug
 
         for cnt in contours:
             for point in cnt:
                 pt = (float(point[0][0]), float(point[0][1]))
                 if cv2.pointPolygonTest(roi1_np, pt, False) >= 0:
-                    roi_objects.append(cnt)
+                    self.roi_objs.append(cnt)
                     break
 
         if self.debug == "print":
@@ -148,13 +158,11 @@ class ImageTransformer:
             roi_masked[roi_green_mask > 0] = green
 
             cv2.rectangle(roi_masked, (x, y), (x + w, y + h), (255, 0, 0), 4)
-            roi_masked_path = f'{self.name}_roi_masked.JPG'
-            cv2.imwrite(roi_masked_path, roi_masked)
+            cv2.imwrite(f'{self.name}_roi_masked.JPG', roi_masked)
+
+        self.roi_masked = roi_masked
 
         pcv.params.debug = None
-        self.roi_objs = roi_objects
-        self.hierarchy_data = None
-        self.kept_mask_data = None
 
     def analyze_objects(self) -> NoReturn:
         """ Analyze the objects in the image """
@@ -176,6 +184,8 @@ class ImageTransformer:
                 analysis_image,
                 f'{self.name}_analysis_objects.JPG'
             )
+        self.color_analysis = analysis_image
+
         analysis_image = self.original_img.copy()
 
         if obj is not None:
@@ -188,10 +198,9 @@ class ImageTransformer:
                 (255, 0, 0),
                 2
             )
-            shape_imgs = analysis_image
 
             if self.debug == "print":
-                pcv.print_image(shape_imgs, f'{self.name}_shape_analysis.JPG')
+                pcv.print_image(analysis_image, f'{self.name}_shape_analysis.JPG')
 
             boundary_img1 = self.original_img.copy()
             cv2.line(boundary_img1, (0, 1680),
@@ -269,9 +278,7 @@ class ImageTransformer:
                 )
             pcv.print_image(annotated, f'{self.name}_pseudolandmarks.JPG')
 
-        self.top = top
-        self.bottom = bottom
-        self.center_v = center_v
+        self.pseudolandmarks = annotated
 
     def generate_color_histogram(self) -> NoReturn:
         """ Generate a color histogram for the image with 9 channels """
@@ -291,18 +298,18 @@ class ImageTransformer:
         hsv_h, hsv_s, hsv_v = cv2.split(hsv)
 
         channel_list = [
-            ("Blue", b, 256, (255, 0, 0)),
-            ("Green", g, 256, (0, 255, 0)),
-            ("Red", r, 256, (0, 0, 255)),
-            ("Lightness", lab_L, 256, (128, 128, 128)),
-            ("Hue", hsv_h, 180, (0, 165, 255)),
-            ("Saturation", hsv_s, 256, (75, 0, 130)),
-            ("Value", hsv_v, 256, (255, 165, 0)),
-            ("Green-Magenta", lab_a, 256, (255, 105, 180)),
-            ("Blue-Yellow", lab_b, 256, (0, 255, 255)),
+            ("Blue", b, 256),
+            ("Green", g, 256),
+            ("Red", r, 256),
+            ("Lightness", lab_L, 256),
+            ("Hue", hsv_h, 180),
+            ("Saturation", hsv_s, 256),
+            ("Value", hsv_v, 256),
+            ("Green-Magenta", lab_a, 256),
+            ("Blue-Yellow", lab_b, 256),
         ]
 
-        for label, img, bins, color in channel_list:
+        for label, img, bins in channel_list:
             hist = cv2.calcHist([img], [0], None, [bins], [0, bins])
             cv2.normalize(
                 hist,
@@ -319,7 +326,34 @@ class ImageTransformer:
                 x2 = int(i * scale)
                 y1 = canvas_height - int(hist[i - 1])
                 y2 = canvas_height - int(hist[i])
-                cv2.line(canvas, (x1, y1), (x2, y2), color, 1)
+                cv2.line(canvas, (x1, y1), (x2, y2), LABELED_COLORS[label], 1)
 
         if self.debug == "print":
             pcv.print_image(canvas, f'{self.name}_color_histogram.JPG')
+
+        self.histogram = canvas
+
+    def display_results(self) -> NoReturn:
+        """ Display the results of the transformations """
+        _, axis = plt.subplots(2, 3, figsize=(10, 6))
+        axis[0, 0].imshow(self.original_img)
+        axis[0, 0].set_title("Original Image")
+        axis[0, 1].imshow(cv2.cvtColor(self.blur_img, cv2.COLOR_BGR2RGB))
+        axis[0, 1].set_title("Gaussian Blur")
+        axis[0, 2].imshow(self.final_mask)
+        axis[0, 2].set_title("Final Mask")
+        axis[1, 0].imshow(self.roi_masked)
+        axis[1, 0].set_title("ROI Masked Image")
+        axis[1, 1].imshow(self.color_analysis)
+        axis[1, 1].set_title("Color Analysis")
+        axis[1, 2].imshow(self.pseudolandmarks)
+        axis[1, 2].set_title("Pseudolandmarks")
+
+        plt.tight_layout()
+        plt.figure(figsize=(6, 6))
+        plt.imshow(self.histogram)
+        plt.title("Color Histogram")
+        plt.xlabel("Pixel Intensity")
+        plt.ylabel("Frequency")
+
+        plt.show()

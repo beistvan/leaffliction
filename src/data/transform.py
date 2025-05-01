@@ -30,7 +30,7 @@ class Parameters:
         os.makedirs(self.outdir, exist_ok=True)
 
 
-def transform_image(params: Parameters, hist: bool) -> NoReturn:
+def transform_image(params: Parameters, hist: bool, display = False) -> NoReturn:
     """ Generate image transformations for a single image """
     transformer = ImageTransformer(
         params.image,
@@ -44,11 +44,13 @@ def transform_image(params: Parameters, hist: bool) -> NoReturn:
     transformer.compute_roi()
     transformer.analyze_objects()
     transformer.generate_pseudolandmarks()
-    if not hist:
+    if hist:
         transformer.generate_color_histogram()
+    if display:
+        transformer.display_results()
 
 
-def transform_batch(src: str, dst: str, hist: bool) -> NoReturn:
+def transform_batch(src: str, dst: str) -> NoReturn:
     """ Generate image transformations for a batch of images """
     logger.info(f"Batch processing images from {src} to {dst}")
     logger.info(f"Found {len(os.listdir(src))} pictures")
@@ -66,7 +68,7 @@ def transform_batch(src: str, dst: str, hist: bool) -> NoReturn:
                 writeimg=True,
                 outdir=os.path.join(dst, root),
             )
-            transform_image(params, hist)
+            transform_image(params, False)
 
 
 def extract_name(path: str) -> str:
@@ -88,11 +90,6 @@ def parse_args() -> argparse.Namespace:
         "-dst",
         type=str,
         help="Destination dir for processed images")
-    parser.add_argument(
-        "--hist",
-        action="store_true",
-        default=False,
-        help="Generate color histogram")
 
     return parser.parse_args()
 
@@ -135,11 +132,11 @@ def main() -> NoReturn:
 
     if args.img:
         params = Parameters(args.img, outdir="./images", display=True)
-        transform_image(params, args.hist)
+        transform_image(params, True, True)
         logger.info('Image transformation completed.')
         logger.info(f'Results saved in {params.outdir}')
     else:
-        transform_batch(args.src, args.dst, args.hist)
+        transform_batch(args.src, args.dst)
         logger.info('Batch image transformation completed.')
         logger.info(f'Results saved in {args.dst}')
 
