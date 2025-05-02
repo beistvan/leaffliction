@@ -8,6 +8,7 @@ Grape/
 *.txt
 *.zip
 *.h5
+classes.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

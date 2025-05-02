@@ -31,6 +31,12 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Path to the zip file containing the trained model and classes.",
     )
+    parser.add_argument(
+        "--save",
+        action="store_true",
+        default=False,
+        help="Save the prediction results to a file."
+    )
     return parser.parse_args()
 
 
@@ -56,7 +62,7 @@ def unzip(zip_path: str) -> tuple[tf.keras.Model, list[str]]:
     return model, classes
 
 
-def plot_results(img_path: str, confidence: float, predicted: str):
+def plot_results(img_path: str, confidence: float, predicted: str, save: bool):
     """ Plot the original and resized images with predictions """
     img = image.load_img(img_path)
 
@@ -71,11 +77,11 @@ def plot_results(img_path: str, confidence: float, predicted: str):
         va='center',
         bbox=dict(facecolor='white', alpha=0.5, edgecolor='black')
     )
-
     plt.title(f"Image: {img_path}")
-
     plt.tight_layout()
     plt.axis('off')
+    if save:
+        plt.savefig(f"prediction_{os.path.basename(img_path)}")
     plt.show()
 
 
@@ -95,7 +101,7 @@ def main():
     logger.info(f"Model loaded from {args.tmz}")
 
     class_idx, confidence = predict_image(model, args.image_path)
-    plot_results(args.image_path, confidence, classes[class_idx])
+    plot_results(args.image_path, confidence, classes[class_idx], args.save)
     logger.info("Done")
 
 
