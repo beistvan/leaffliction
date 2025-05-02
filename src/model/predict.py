@@ -21,10 +21,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Predict leaf desease using a trained model"
     )
-
-    parser.add_argument(
-        "image_path",
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "-image",
         help="Path to the input image."
+    )
+    group.add_argument(
+        "-dir",
+        help="Path to the directory containing images."
     )
     parser.add_argument(
         "-tmz",
@@ -85,23 +89,49 @@ def plot_results(img_path: str, confidence: float, predicted: str, save: bool):
     plt.show()
 
 
+def validate_arguments(args: argparse.Namespace):
+    """ Validate command line arguments """
+    if not os.path.isfile(args.tmz):
+        logger.error(f"Error: {args.tmz} does not exist.")
+
+    if args.image:
+        if not os.path.isfile(args.image):
+            logger.error(f"Error: {args.image} does not exist.")
+        return
+
+    if not os.path.isdir(args.dir):
+        logger.error(f"Error: {args.dir} does not exist.")
+        return
+
+
+def extract_images(image_path: str, dir_path: str) -> list[str]:
+    """ Extract images from the specified path """
+    if image_path:
+        return [image_path]
+
+    images = []
+    for root, _, files in os.walk(dir_path):
+        for file in files:
+            if file.lower().endswith('jpg'):
+                images.append(os.path.join(root, file))
+    return images
+
+
 def main():
     """ Main function to load the model and predict the class of the image """
     args = parse_args()
-
-    if not os.path.isfile(args.image_path):
-        logger.error(f"Error: {args.image_path} does not exist.")
-        return
-
-    if not os.path.isfile(args.tmz):
-        logger.error(f"Error: {args.tmz} does not exist.")
-        return
+    validate_arguments(args)
+    images = extract_images(args.image, args.dir)
+    logger.info(f"Found {len(images)} images to predict.")
 
     model, classes = unzip(args.tmz)
     logger.info(f"Model loaded from {args.tmz}")
 
-    class_idx, confidence = predict_image(model, args.image_path)
-    plot_results(args.image_path, confidence, classes[class_idx], args.save)
+    for img_path in images:
+        logger.info(f"Predicting {img_path}")
+        class_idx, confidence = predict_image(model, img_path)
+        plot_results(img_path, confidence, classes[class_idx], args.save)
+
     logger.info("Done")
 
 
