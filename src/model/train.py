@@ -4,12 +4,16 @@ import argparse
 import zipfile
 import os
 import logging
+import pickle
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+MODEL_FILENAME = "trained_model.h5"
+CLASSES_FILENAME = "classes.pkl"
 
 
 def parse_args() -> argparse.Namespace:
@@ -101,14 +105,20 @@ def setup_data_generators(
 
 def save_trainings(
             model: models.Sequential,
-            output_zip: str
+            output_zip: str,
+            classes: list[str]
         ) -> None:
     """ Save the trained model and augmented images in a zip file """
-    model.save("trained_model.h5")
-    logger.info("Model saved as trained_model.h5")
+    model.save(MODEL_FILENAME)
+    logger.info(f"Model saved as {MODEL_FILENAME}")
+
+    with open(CLASSES_FILENAME, 'wb') as f:
+        pickle.dump(classes, f)
+    logger.info(f"Classes saved as {CLASSES_FILENAME}")
 
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
-        zf.write("trained_model.h5")
+        zf.write(MODEL_FILENAME)
+        zf.write(CLASSES_FILENAME)
 
         for root, _, files in os.walk("augmented_images"):
             for file in files:
@@ -127,6 +137,8 @@ def main():
         os.path.abspath(args.data_dir),
         args.batch_size
     )
+    classes = list(train_generator.class_indices.keys())
+
     logger.info("Start training")
 
     model = create_model(len(train_generator.class_indices))
@@ -143,7 +155,7 @@ def main():
     val_loss, val_acc = model.evaluate(val_generator)
     logger.info(f"Validation loss {val_loss}, accuracy {val_acc}")
 
-    save_trainings(model, args.output_zip)
+    save_trainings(model, args.output_zip, classes)
     logger.info("Training and saving completed.")
 
 
