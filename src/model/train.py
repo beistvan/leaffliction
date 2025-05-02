@@ -11,10 +11,9 @@
 # *************************************************************************** #
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras import layers, models
+from keras import layers, models
 import argparse
 import zipfile
-import shutil
 import os
 
 
@@ -27,9 +26,14 @@ def parse_args():
         "--batch_size",
         type=int,
         default=32,
-        help="Batch size.")
-    parser.add_argument("--epochs", type=int, default=10,
-                        help="Number of training epochs.")
+        help="Batch size."
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=10,
+        help="Number of training epochs."
+    )
     parser.add_argument(
         "--output_zip",
         default="trained_model_and_augmented.zip",
@@ -106,21 +110,24 @@ def main():
     model = create_model(num_classes)
     model.summary()
 
+    model.fit(
+        train_generator,
+        validation_data=val_generator,
+        batch_size=batch_size,
+        epochs=args.epochs,
+        verbose=1
+    )
+
     val_loss, val_acc = model.evaluate(val_generator)
     print(f"Validation accuracy: {val_acc:.2f}")
 
     model.save("trained_leaf_disease_model.h5")
     print("Model saved as trained_leaf_disease_model.h5")
 
-    augmented_folder = "augmented_images"
-    if os.path.exists(augmented_folder):
-        shutil.rmtree(augmented_folder)
-    os.makedirs(augmented_folder, exist_ok=True)
-
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         zf.write("trained_leaf_disease_model.h5")
 
-        for root, dirs, files in os.walk(augmented_folder):
+        for root, dirs, files in os.walk(args.data_dir):
             for file in files:
                 full_path = os.path.join(root, file)
                 relative_path = os.path.relpath(full_path, start=".")

@@ -82,10 +82,15 @@ def main():
     class_idx, confidence = predict_image(model, args.image_path)
 
     class_names = [
-        "apple_apple_scab",
         "apple_black_rot",
+        "apple_healthy",
         "apple_cedar_apple_rust",
-        "apple_healthy"]
+        "apple_apple_scab",
+        "grape_black_rot",
+        "grape_esca",
+        "grape_healthy",
+        "grape_spot",
+    ]
 
     if class_idx < len(class_names):
         predicted_class = class_names[class_idx]
