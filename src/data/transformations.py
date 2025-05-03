@@ -308,21 +308,21 @@ class ImageTransformer:
         plt.grid(True)
         plt.show()
 
+    def plot_sub(self, axes, pos, img, title):
+        """Helper to plot a BGR image on given subplot position."""
+        ax = axes[pos]
+        ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        ax.set_title(title)
+
     def display_results(self) -> NoReturn:
         """ Display the results of the transformations """
-        _, axis = plt.subplots(2, 3, figsize=(10, 6))
-        axis[0, 0].imshow(self.original_img)
-        axis[0, 0].set_title("Original Image")
-        axis[0, 1].imshow(cv2.cvtColor(self.blur_img, cv2.COLOR_BGR2RGB))
-        axis[0, 1].set_title("Gaussian Blur")
-        axis[0, 2].imshow(self.final_mask)
-        axis[0, 2].set_title("Final Mask")
-        axis[1, 0].imshow(self.roi_masked)
-        axis[1, 0].set_title("ROI Masked Image")
-        axis[1, 1].imshow(self.color_analysis)
-        axis[1, 1].set_title("Color Analysis")
-        axis[1, 2].imshow(self.pseudolandmarks)
-        axis[1, 2].set_title("Pseudolandmarks")
+        _, axes = plt.subplots(2, 3, figsize=(10, 6))
+        self.plot_sub(axes, (0, 0), self.original_img, "Original Image")
+        self.plot_sub(axes, (0, 1), self.blur_img, "Gaussian Blur")
+        self.plot_sub(axes, (0, 2), self.final_mask, "Final Mask")
+        self.plot_sub(axes, (1, 0), self.roi_masked, "ROI Masked Image")
+        self.plot_sub(axes, (1, 1), self.color_analysis, "Color Analysis")
+        self.plot_sub(axes, (1, 2), self.pseudolandmarks, "Pseudolandmarks")
         plt.tight_layout()
 
         self.generate_color_histogram()
