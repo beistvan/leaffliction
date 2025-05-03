@@ -5,6 +5,7 @@ leaves/
 Apple/
 Grape/
 *.JPG
+*.png
 *.txt
 *.zip
 *.h5
