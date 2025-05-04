@@ -6,7 +6,6 @@ Apple/
 Grape/
 *.JPG
 *.png
-*.txt
 *.zip
 *.h5
 classes.pkl
