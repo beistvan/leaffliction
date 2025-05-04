@@ -6,7 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
 import logging
-import pypickle
+import pickle
 from train import MODEL_FILENAME, CLASSES_FILENAME
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,8 @@ def unzip(zip_path: str) -> tuple[tf.keras.Model, list[str]]:
         zf.extract(MODEL_FILENAME, path=".")
         zf.extract(CLASSES_FILENAME, path=".")
     model = tf.keras.models.load_model(MODEL_FILENAME)
-    classes = pypickle.load(CLASSES_FILENAME)
+    with open(CLASSES_FILENAME, 'rb') as f:
+        classes = pickle.load(f)
     return model, classes
 
 
