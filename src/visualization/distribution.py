@@ -11,8 +11,10 @@ import argparse
 import os
 import logging
 from typing import Dict
-
+import matplotlib
 import matplotlib.pyplot as plt
+
+matplotlib.use('TkAgg')
 
 
 VALID_IMAGE_EXTENSIONS = {

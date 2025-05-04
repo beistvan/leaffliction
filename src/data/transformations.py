@@ -3,8 +3,10 @@ from plantcv import plantcv as pcv
 import numpy as np
 import cv2
 from typing import NoReturn
+import matplotlib
 import matplotlib.pyplot as plt
 
+matplotlib.use('TkAgg')
 
 RBG_CHANNELS = {
     "b": (255, 0, 0),
