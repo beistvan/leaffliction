@@ -34,8 +34,7 @@ def parse_args() -> argparse.Namespace:
         help="Path to the directory containing images."
     )
     parser.add_argument(
-        "-tmz",
-        required=True,
+        "model_zip",
         help="Path to the zip file containing the trained model and classes.",
     )
     parser.add_argument(
@@ -95,8 +94,8 @@ def plot_results(img_path: str, confidence: float, predicted: str, save: bool):
 
 def validate_arguments(args: argparse.Namespace):
     """ Validate command line arguments """
-    if not os.path.isfile(args.tmz):
-        logger.error(f"Error: {args.tmz} does not exist.")
+    if not os.path.isfile(args.model_zip):
+        logger.error(f"Error: {args.model_zip} does not exist.")
 
     if args.image:
         if not os.path.isfile(args.image):
@@ -128,8 +127,8 @@ def main():
     images = extract_images(args.image, args.dir)
     logger.info(f"Found {len(images)} images to predict.")
 
-    model, classes = unzip(args.tmz)
-    logger.info(f"Model loaded from {args.tmz}")
+    model, classes = unzip(args.model_zip)
+    logger.info(f"Model loaded from {args.model_zip}")
 
     for img_path in images:
         logger.info(f"Predicting {img_path}")
