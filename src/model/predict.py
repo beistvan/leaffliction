@@ -3,11 +3,14 @@ import os
 import zipfile
 import numpy as np
 import tensorflow as tf
+import matplotlib
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
 import logging
 import pickle
 from train import MODEL_FILENAME, CLASSES_FILENAME
+
+matplotlib.use('TkAgg')
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
