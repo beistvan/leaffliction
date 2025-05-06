@@ -106,7 +106,8 @@ def setup_data_generators(
 def save_trainings(
             model: models.Sequential,
             output_zip: str,
-            classes: list[str]
+            classes: list[str],
+            images_folder: str
         ) -> None:
     """ Save the trained model and augmented images in a zip file """
     model.save(MODEL_FILENAME)
@@ -120,7 +121,7 @@ def save_trainings(
         zf.write(MODEL_FILENAME)
         zf.write(CLASSES_FILENAME)
 
-        for root, _, files in os.walk("augmented_images"):
+        for root, _, files in os.walk(images_folder):
             for file in files:
                 full_path = os.path.join(root, file)
                 relative_path = os.path.relpath(full_path, start=".")
@@ -155,7 +156,7 @@ def main():
     val_loss, val_acc = model.evaluate(val_generator)
     logger.info(f"Validation loss {val_loss}, accuracy {val_acc}")
 
-    save_trainings(model, args.output_zip, classes)
+    save_trainings(model, args.output_zip, classes, args.data_dir)
     logger.info("Training and saving completed.")
 
 

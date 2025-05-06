@@ -1,4 +1,6 @@
 import argparse
+import logging
+import pickle
 import os
 import zipfile
 import numpy as np
@@ -6,8 +8,6 @@ import tensorflow as tf
 import matplotlib
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
-import logging
-import pickle
 from train import MODEL_FILENAME, CLASSES_FILENAME
 
 matplotlib.use('TkAgg')
@@ -17,6 +17,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
+RESULT_FILE = 'results.txt'
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         help="Path to the zip file containing the trained model and classes.",
     )
     parser.add_argument(
-        "--save",
+        "--silent",
         action="store_true",
         default=False,
         help="Save the prediction results to a file."
@@ -69,7 +71,7 @@ def unzip(zip_path: str) -> tuple[tf.keras.Model, list[str]]:
     return model, classes
 
 
-def plot_results(img_path: str, confidence: float, predicted: str, save: bool):
+def plot_results(img_path: str, confidence: float, predicted: str):
     """ Plot the original and resized images with predictions """
     img = image.load_img(img_path)
 
@@ -87,8 +89,6 @@ def plot_results(img_path: str, confidence: float, predicted: str, save: bool):
     plt.title(f"Image: {img_path}")
     plt.tight_layout()
     plt.axis('off')
-    if save:
-        plt.savefig(f"prediction_{os.path.basename(img_path)}")
     plt.show()
 
 
@@ -120,6 +120,19 @@ def extract_images(image_path: str, dir_path: str) -> list[str]:
     return images
 
 
+def store_predictions(predictions: tuple[int, float, str]):
+    """ Stores predictions in result file """
+    total = len(predictions)
+    successful = 0
+
+    with open(RESULT_FILE, 'w') as f:
+        for path, _, prediction in predictions:
+            f.write(f'{path} - {prediction}\n')
+            if prediction.lower() in path.lower():
+                successful += 1
+        f.write(f"Expected accuracy {successful}/{total} or {successful / total}\n")
+
+
 def main():
     """ Main function to load the model and predict the class of the image """
     args = parse_args()
@@ -130,10 +143,17 @@ def main():
     model, classes = unzip(args.model_zip)
     logger.info(f"Model loaded from {args.model_zip}")
 
+    predictions = []
     for img_path in images:
-        logger.info(f"Predicting {img_path}")
         class_idx, confidence = predict_image(model, img_path)
-        plot_results(img_path, confidence, classes[class_idx], args.save)
+        predictions.append((img_path, confidence, classes[class_idx]))
+
+    if args.silent:
+        store_predictions(predictions)
+    else:
+        for img, conf, pred in predictions:
+            logger.info(f"Predicting {img_path}")
+            plot_results(img, conf, pred)
 
     logger.info("Done")
 
