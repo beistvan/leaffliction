@@ -130,8 +130,10 @@ def store_predictions(predictions: tuple[int, float, str]):
             f.write(f'{path} - {prediction}\n')
             if prediction.lower() in path.lower():
                 successful += 1
-        f.write(f"Expected accuracy {successful}/{total} or {successful / total}\n")
-
+        if total != 0:
+            f.write(f"Expected accuracy {successful}/{total} or {successful / total}\n")
+        else:
+            f.write(f"Expected accuracy {successful}/{total}\n")
 
 def main():
     """ Main function to load the model and predict the class of the image """
