@@ -8,6 +8,7 @@ import tensorflow as tf
 import matplotlib
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
+from plantcv import plantcv as pcv
 from train import MODEL_FILENAME, CLASSES_FILENAME
 
 matplotlib.use('TkAgg')
@@ -71,24 +72,62 @@ def unzip(zip_path: str) -> tuple[tf.keras.Model, list[str]]:
     return model, classes
 
 
+def apply_mask(img: np.ndarray) -> np.ndarray:
+    """ Apply a mask to the image """
+    s = pcv.rgb2gray_hsv(img, channel="s")
+    s_thresh = pcv.threshold.binary(s, threshold=60, object_type="light")
+    s_gblur = pcv.gaussian_blur(s_thresh, (5, 5), 0, None)
+
+    b = pcv.rgb2gray_lab(img, "b")
+    b_thresh = pcv.threshold.binary(b, 200, "light")
+
+    bs = pcv.logical_or(s_gblur, b_thresh)
+    masked = pcv.apply_mask(img, bs, "white")
+
+    masked_a = pcv.rgb2gray_lab(masked, "a")
+    masked_b = pcv.rgb2gray_lab(masked, "b")
+
+    maskeda_thresh = pcv.threshold.binary(masked_a, 115, "dark")
+    maskedb_thresh = pcv.threshold.binary(masked_b, 128, "light")
+    ab1 = pcv.logical_or(maskeda_thresh, maskedb_thresh)
+
+    maskeda_thresh1 = pcv.threshold.binary(masked_a, 135, "light")
+    ab = pcv.logical_or(maskeda_thresh1, ab1)
+
+    return pcv.apply_mask(masked, pcv.fill(ab, 200), "white")
+
+
+
 def plot_results(img_path: str, confidence: float, predicted: str):
     """ Plot the original and resized images with predictions """
     img = image.load_img(img_path)
+    masked = apply_mask(np.array(img))
 
-    plt.figure(num='Prediction')
+    plt.figure(num='Prediction', figsize=(8, 5))
+    plt.gcf().set_facecolor('black')
+
+    plt.subplot(1, 2, 1)
     plt.imshow(img)
-    plt.text(
-        img.width / 2,
-        img.height - 10,
-        f"Pred: {predicted}\nConf: {confidence:.2f}",
+    plt.title("Original Image", color='white')
+    plt.axis('off')
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(masked)
+    plt.title("Masked Image", color='white')
+    plt.axis('off')
+
+    # plt.imshow(masked)
+    plt.gcf().text(
+        0.5, 0.02,
+        f"Image: {img_path}\n"
+        f"Prediction: {predicted} | Confidence: {confidence:.2f}",
         fontsize=12,
         ha='center',
-        va='center',
-        bbox=dict(facecolor='white', alpha=0.5, edgecolor='black')
+        color='white',
+        bbox=dict(facecolor='black', alpha=0.8, edgecolor='white')
     )
-    plt.title(f"Image: {img_path}")
+
     plt.tight_layout()
-    plt.axis('off')
     plt.show()
 
 
