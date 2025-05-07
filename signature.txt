@@ -1,1 +1,1 @@
-1380fda2eb47cc84e01fadfae038189fb6fe3026  trained_model.zip
+22efd3237f108eb87cca905ff70cbf61288fd50c  directory.zip
