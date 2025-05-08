@@ -2,6 +2,7 @@ import argparse
 import logging
 import pickle
 import os
+import sys
 import zipfile
 import numpy as np
 import tensorflow as tf
@@ -154,15 +155,26 @@ def validate_arguments(args: argparse.Namespace):
     """ Validate command line arguments """
     if not os.path.isfile(args.model_zip):
         logger.error(f"Error: {args.model_zip} does not exist.")
+        sys.exit(1)
+
+    if not args.model_zip.endswith('.zip'):
+        logger.error(f"Error: {args.model_zip} is not a zip file.")
+        sys.exit(1)
 
     if args.image:
         if not os.path.isfile(args.image):
             logger.error(f"Error: {args.image} does not exist.")
-        return
-
-    if not os.path.isdir(args.dir):
-        logger.error(f"Error: {args.dir} does not exist.")
-        return
+            sys.exit(1)
+        if not args.image.lower().endswith('jpg'):
+            logger.error(f"Error: {args.image} is not a jpg file.")
+            sys.exit(1)
+    else:
+        if not os.path.isdir(args.dir):
+            logger.error("Error: No image or directory specified.")
+            sys.exit(1)
+        if len(os.listdir(args.dir)) == 0:
+            logger.error(f"Error: {args.dir} is empty.")
+            sys.exit(1)
 
 
 def extract_images(image_path: str, dir_path: str) -> list[str]:
