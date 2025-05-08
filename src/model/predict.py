@@ -103,7 +103,6 @@ def apply_mask(img: np.ndarray) -> np.ndarray:
     return pcv.apply_mask(masked, pcv.fill(ab, 200), "white")
 
 
-
 def plot_results(img_path: str, confidence: float, predicted: str, dual: bool):
     """ Plot the original and resized images with predictions """
     img = image.load_img(img_path)
@@ -190,9 +189,11 @@ def store_predictions(predictions: tuple[int, float, str]):
             if prediction.lower() in path.lower():
                 successful += 1
         if total != 0:
-            f.write(f"Expected accuracy {successful}/{total} or {successful / total}\n")
+            f.write(f"Expected accuracy {successful}/{total}"
+                    f"or {successful / total}\n")
         else:
             f.write(f"Expected accuracy {successful}/{total}\n")
+
 
 def main():
     """ Main function to load the model and predict the class of the image """
