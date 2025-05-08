@@ -59,7 +59,12 @@ def transform_batch(src: str, dst: str) -> NoReturn:
         if not images:
             continue
 
+        print("Images found:")
+        print(images)
+
         for file in tqdm(images):
+            print(os.path.join(root, file))
+            print(os.path.join(dst, root))
             params = Parameters(
                 os.path.join(root, file),
                 debug="print",
@@ -128,16 +133,19 @@ def main() -> NoReturn:
     args = parse_args()
     validate_args(args)
 
-    if args.img:
-        params = Parameters(args.img, outdir="./images", display=True)
-        transform_image(params, True)
-        logger.info('Image transformation completed.')
-        logger.info(f'Results saved in {params.outdir}')
-    else:
-        transform_batch(args.src, args.dst)
-        logger.info('Batch image transformation completed.')
-        logger.info(f'Results saved in {args.dst}')
-
+    try:
+        if args.img:
+            params = Parameters(args.img, outdir="./images", display=True)
+            transform_image(params, True)
+            logger.info('Image transformation completed.')
+            logger.info(f'Results saved in {params.outdir}')
+        else:
+            transform_batch(args.src, args.dst)
+            logger.info('Batch image transformation completed.')
+            logger.info(f'Results saved in {args.dst}')
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

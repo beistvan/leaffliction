@@ -128,12 +128,23 @@ def main():
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    distributions = get_distributions(src_dir)
-    to_augument = get_to_augument(distributions)
-    copy_images(src_dir, dst_dir)
-    create_augumented_images(dst_dir, to_augument, args.aug)
-    logger.info("Dataset balancing completed.")
+    if src_dir == dst_dir:
+        logger.error("Source and destination directories must be different.")
+        return
 
+    if not os.path.exists(args.aug):
+        logger.error(f"Augmentation script {args.aug} does not exist.")
+        return
+
+    try:
+        distributions = get_distributions(src_dir)
+        to_augument = get_to_augument(distributions)
+        copy_images(src_dir, dst_dir)
+        create_augumented_images(dst_dir, to_augument, args.aug)
+        logger.info("Dataset balancing completed.")
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
