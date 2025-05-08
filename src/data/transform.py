@@ -15,6 +15,7 @@ logging.basicConfig(
 
 class Parameters:
     """ Stores parameters for the transformation process """
+
     def __init__(
             self,
             image_path,
@@ -146,6 +147,7 @@ def main() -> NoReturn:
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -2,7 +2,6 @@ import argparse
 import os
 import logging
 import random
-import sys
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -65,6 +64,7 @@ def main() -> None:
             logger.info(f"Successfully processed {folder} folder.")
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+
 
 if __name__ == "__main__":
     main()
