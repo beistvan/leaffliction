@@ -46,6 +46,12 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help="Save the prediction results to a file."
     )
+    parser.add_argument(
+        "--masked",
+        default=False,
+        action="store_true",
+        help="Displays transformed image."
+    )
     return parser.parse_args()
 
 
@@ -98,34 +104,48 @@ def apply_mask(img: np.ndarray) -> np.ndarray:
 
 
 
-def plot_results(img_path: str, confidence: float, predicted: str):
+def plot_results(img_path: str, confidence: float, predicted: str, dual: bool):
     """ Plot the original and resized images with predictions """
     img = image.load_img(img_path)
-    masked = apply_mask(np.array(img))
 
-    plt.figure(num='Prediction', figsize=(8, 5))
-    plt.gcf().set_facecolor('black')
+    if dual:
+        plt.figure(num='Prediction', figsize=(8, 5))
+        plt.gcf().set_facecolor('black')
 
-    plt.subplot(1, 2, 1)
-    plt.imshow(img)
-    plt.title("Original Image", color='white')
-    plt.axis('off')
+        plt.subplot(1, 2, 1)
+        plt.imshow(img)
+        plt.title("Original Image", color='white')
+        plt.axis('off')
 
-    plt.subplot(1, 2, 2)
-    plt.imshow(masked)
-    plt.title("Masked Image", color='white')
-    plt.axis('off')
+        masked = apply_mask(np.array(img))
+        plt.subplot(1, 2, 2)
+        plt.imshow(masked)
+        plt.title("Masked Image", color='white')
+        plt.axis('off')
 
-    # plt.imshow(masked)
-    plt.gcf().text(
-        0.5, 0.02,
-        f"Image: {img_path}\n"
-        f"Prediction: {predicted} | Confidence: {confidence:.2f}",
-        fontsize=12,
-        ha='center',
-        color='white',
-        bbox=dict(facecolor='black', alpha=0.8, edgecolor='white')
-    )
+        plt.gcf().text(
+            0.5, 0.02,
+            f"Image: {img_path}\n"
+            f"Prediction: {predicted} | Confidence: {confidence:.2f}",
+            fontsize=12,
+            ha='center',
+            color='white',
+            bbox=dict(facecolor='black', alpha=0.8, edgecolor='white')
+        )
+    else:
+        plt.figure(num='Prediction')
+        plt.imshow(img)
+        plt.text(
+            img.width / 2,
+            img.height - 10,
+            f"Pred: {predicted}\nConf: {confidence:.2f}",
+            fontsize=12,
+            ha='center',
+            va='center',
+            bbox=dict(facecolor='white', alpha=0.5, edgecolor='black')
+        )
+        plt.title(f"Image: {img_path}")
+        plt.axis('off')
 
     plt.tight_layout()
     plt.show()
@@ -194,7 +214,7 @@ def main():
     else:
         for img, conf, pred in predictions:
             logger.info(f"Predicting {img_path}")
-            plot_results(img, conf, pred)
+            plot_results(img, conf, pred, args.masked)
 
     logger.info("Done")
 
